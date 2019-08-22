@@ -25,15 +25,17 @@ Prototype Refactor
   * dimensions (These represent the character's size in the video game)
   * destroy() // prototype method that returns: `${this.name} was removed from the game.`
 */
-const GameObject = function(attributes) {
-  this.createdAt = attributes.createdAt;
-  this.name = attributes.name;
-  this.dimensions = attributes.dimensions;
-};
+class GameObject {
+  constructor(attributes) {
+    this.createdAt = attributes.createdAt;
+    this.name = attributes.name;
+    this.dimensions = attributes.dimensions;
+  }
 
-GameObject.prototype.destroy = function() {
-  return `${this.name} was removed from the game.`;
-};
+  destroy() {
+    return `${this.name} was removed from the game.`;
+  }
+}
 
 /*
   === CharacterStats ===
@@ -41,18 +43,19 @@ GameObject.prototype.destroy = function() {
   * takeDamage() // prototype method -> returns the string '<object name> took damage.'
   * should inherit destroy() from GameObject's prototype
 */
-const CharacterStats = function(attributes) {
-  GameObject.call(this, attributes);
-  this.healthPoints = attributes.healthPoints;
-};
+class CharacterStats extends GameObject {
+  constructor(attributes) {
+    super(attributes);
+    this.healthPoints = attributes.healthPoints;
+  }
 
-CharacterStats.prototype = Object.create(GameObject.prototype);
-CharacterStats.prototype.takeDamage = function(dmg) {
-  this.healthPoints -= dmg;
-  return this.healthPoints > 0
-    ? `${this.name} took ${dmg} damage.`
-    : `${this.name} took ${dmg} and is now dead.`;
-};
+  takeDamage(dmg) {
+    this.healthPoints -= dmg;
+    return this.healthPoints > 0
+      ? `${this.name} took ${dmg} damage.`
+      : `${this.name} took ${dmg} and is now dead.`;
+  }
+}
 
 /*
   === Humanoid (Having an appearance or character resembling that of a human.) ===
@@ -63,17 +66,18 @@ CharacterStats.prototype.takeDamage = function(dmg) {
   * should inherit destroy() from GameObject through CharacterStats
   * should inherit takeDamage() from CharacterStats
 */
-const Humanoid = function(attributes) {
-  CharacterStats.call(this, attributes);
-  this.team = attributes.team;
-  this.weapons = attributes.weapons;
-  this.language = attributes.language;
-};
+class Humanoid extends CharacterStats {
+  constructor(attributes) {
+    super(attributes);
+    this.team = attributes.team;
+    this.weapons = attributes.weapons;
+    this.language = attributes.language;
+  }
 
-Humanoid.prototype = Object.create(CharacterStats.prototype);
-Humanoid.prototype.greet = function() {
-  return `${this.name} offers a greeting in ${this.language}.`;
-};
+  greet() {
+    return `${this.name} offers a greeting in ${this.language}.`;
+  }
+}
 
 /*
  * Inheritance chain: GameObject -> CharacterStats -> Humanoid
@@ -141,20 +145,21 @@ console.log(swordsman.destroy()); // Sir Mustachio was removed from the game.
 // * Give the Hero and Villains different methods that could be used to remove health points from objects which could result in destruction if health gets to 0 or drops below 0;
 // * Create two new objects, one a villain and one a hero and fight it out with methods!
 
-const HeroVillian = function(attributes) {
-  Humanoid.call(this, attributes);
-  this.atk = attributes.atk;
-  this.def = attributes.def;
-};
+class HeroVillian extends Humanoid {
+  constructor(attributes) {
+    super(attributes);
+    this.atk = attributes.atk;
+    this.def = attributes.def;
+  }
 
-HeroVillian.prototype = Object.create(Humanoid.prototype);
-HeroVillian.prototype.attack = function(human) {
-  if (this.healthPoints <= 0) return `${this.name} is dead and can't attack`;
-  console.log(`${this.name} attacks ${human.name}`);
-  atkDice = Math.floor(Math.random() * 6) + 1;
-  defDice = Math.floor(Math.random() * 6) + 1;
-  return human.takeDamage(this.atk + atkDice - human.def + defDice);
-};
+  attack(human) {
+    if (this.healthPoints <= 0) return `${this.name} is dead and can't attack`;
+    console.log(`${this.name} attacks ${human.name}`);
+    const atkDice = Math.floor(Math.random() * 6) + 1;
+    const defDice = Math.floor(Math.random() * 6) + 1;
+    return human.takeDamage(this.atk + atkDice - human.def + defDice);
+  }
+}
 
 const hero = new HeroVillian({
   createdAt: new Date(),
